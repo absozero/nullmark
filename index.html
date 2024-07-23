@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>HTML 5 Boilerplate</title>
+  </head>
+  <body>
+    <script>
+      var markdown;
+      // Helper function to convert the json object input as a parameter into markdown text
+      function convert(JSONObj) {
+        markdown = "# " + JSONObj.title.replaceAll("\n", " - ") + "\n\n";
+        for (var i = 0; i < JSONObj.lists.length; i++) {
+          console.log(JSONObj.lists[i]);
+          markdown +=
+            "## " + JSONObj.lists[i].title.replaceAll("\n", " - ") + "\n\n";
+          for (var j = 0; j < JSONObj.lists[i].notes.length; j++) {
+            console.log(JSONObj.lists[i].notes[j].text);
+            markdown +=
+              "- " +
+              JSONObj.lists[i].notes[j].text.replaceAll("\n", " - ") +
+              "\n";
+          }
+          markdown += "\n";
+        }
+        return markdown;
+      }
+
+      function downloadBlob(blob, name = "output.md") {
+        // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)
+        const blobUrl = URL.createObjectURL(blob);
+
+        // Create a link element
+        const link = document.createElement("a");
+
+        // Set link's href to point to the Blob URL
+        link.href = blobUrl;
+        link.download = name;
+
+        // Append link to the body
+        document.body.appendChild(link);
+
+        // Dispatch click event on the link
+        // This is necessary as link.click() does not work on the latest firefox
+        link.dispatchEvent(
+          new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          }),
+        );
+
+        // Remove link from body
+        document.body.removeChild(link);
+      }
+
+      window.onload = function () {
+        document
+          .getElementById("fileInput")
+          .addEventListener("change", function () {
+            var file = this.files[0];
+            var reader = new FileReader();
+            reader.onload = function (e) {
+              var jsonObj = JSON.parse(e.target.result);
+
+              markdown = convert(jsonObj);
+              document.getElementById("output").innerText = markdown;
+
+              console.log(markdown);
+            };
+            reader.readAsText(file);
+          });
+      };
+      function dlmd() {
+        let jsonBlob = new Blob([markdown]);
+        downloadBlob(jsonBlob, "output.md");
+      }
+    </script>
+    <!--Creates a button that takes any text file as input-->
+    <input type="file" id="fileInput" />
+    <button onclick="convert()">Convert</button>
+    <button id="demo" onclick="dlmd()">download.</button>
+    <div id="output"></div>
+  </body>
+</html>
